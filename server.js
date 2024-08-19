@@ -1,7 +1,8 @@
 console.log("satrted");
 const { exec } = require('child_process');
+const dotenv = require('dotenv');
 
-
+dotenv.config();
 // const { Server } = require('socket.io');
 // const io = new Server({
 //   cors: {
@@ -15,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 
 const server = http.createServer((req, res) => {
@@ -47,7 +48,7 @@ const io = require("socket.io")(server.listen(port, () => {
 io.on('connection', socket => {
 
     socket.on("sendcommand", command => {
-        // console.log(command);
+        console.log("commadn " + command);
         exec(`${command}`, (err, stdout, stderr) => {
             if (err) {
                 console.log(err)
@@ -55,7 +56,7 @@ io.on('connection', socket => {
             if (stderr) {
                 console.log(`stderr: ${stderr}`);
             }
-
+            console.log(stdout);
 
             socket.emit('result', stdout)
             exec('pwd', (err, stdout, stderr) => {
@@ -65,7 +66,7 @@ io.on('connection', socket => {
                 if (stderr) {
                     console.log(`stderr: ${stderr}`);
                 }
-
+                console.log("give dir " + stdout)
                 socket.emit('givedir', stdout)
             });
 
@@ -74,17 +75,17 @@ io.on('connection', socket => {
 
     })
 
-      exec('pwd', (err, stdout, stderr) => {
+    exec('pwd', (err, stdout, stderr) => {
         if (err) {
-          console.log(err)
+            console.log(err)
         }
         if (stderr) {
-          console.log(`stderr: ${stderr}`);
+            console.log(`stderr: ${stderr}`);
         }
         // the *entire* stdout and stderr (buffered)
-        // console.log(`stdout: ${stdout}`);
+        console.log(`stdout: ${stdout}`);
         socket.emit('start', stdout)
-      });
+    });
     // exec(`powershell.exe -Command "pwd"`, (err, stdout, stderr) => {
     //     if (err) {
     //         console.log(err)
