@@ -1,113 +1,101 @@
-console.log("satrted");
-const { exec } = require('child_process');
-const dotenv = require('dotenv');
+function initialization() {
 
-dotenv.config();
-// const { Server } = require('socket.io');
-// const io = new Server({
-//   cors: {
-//     origin: "*", // Allow all origins
-//     methods: ["GET", "POST"] // Allow GET and POST methods
-//   }
-// });
-
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+    console.log("started");
+    const { exec } = require('child_process');;
 
 
-const port = 8765;
+    const http = require('http');
+    const fs = require('fs');
+    const path = require('path');
 
 
-const server = http.createServer((req, res) => {
-    // Serve the .html file
-    const filePath = path.join(__dirname, 'index.html'); // Replace 'index.html' with your file name
+    const port = 8765;
 
-    fs.readFile(filePath, (err, data) => {
-        if (err) {
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end('Internal Server Error');
-        } else {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/html');
-            res.end(data);
+
+    const server = http.createServer((req, res) => {
+        // Serve the .html file
+        const filePath = path.join(__dirname, 'index.html'); // Replace 'index.html' with your file name
+
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'text/plain');
+                res.end('Internal Server Error');
+            } else {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'text/html');
+                res.end(data);
+            }
+        });
+    });
+
+    const io = require("socket.io")(server.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}/`);
+    }), {
+        path: '/socket.io/other',
+        cors: {
+            origin: '*',
         }
     });
-});
-
-const io = require("socket.io")(server.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
-}), {
-    cors: {
-        origin: '*',
-    }
-});
 
 
-io.on('connection', socket => {
-
-    socket.on("sendcommand", command => {
-        console.log("commadn " + command);
-        exec(`${command}`, (err, stdout, stderr) => {
-            if (err) {
-                console.log(err)
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-            }
-            console.log(stdout);
-
-            socket.emit('result', stdout)
-            exec('pwd', (err, stdout, stderr) => {
+    io.on('connection', socket => {
+        console.log("connectionrequest")
+        socket.on("sendcommand", command => {
+            console.log("command " + command);
+            exec(`${command}`, (err, stdout, stderr) => {
                 if (err) {
                     console.log(err)
                 }
                 if (stderr) {
                     console.log(`stderr: ${stderr}`);
                 }
-                console.log("give dir " + stdout)
-                socket.emit('givedir', stdout)
-            });
+                console.log(stdout);
 
+                socket.emit('result', stdout)
+                exec('pwd', (err, stdout, stderr) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                    }
+                    console.log("give dir " + stdout)
+                    socket.emit('givedir', stdout)
+                });
+
+
+            })
 
         })
 
+        exec('pwd', (err, stdout, stderr) => {
+            if (err) {
+                console.log(err)
+            }
+            if (stderr) {
+                console.log(`stderr: ${stderr}`);
+            }
+            // the *entire* stdout and stderr (buffered)
+            console.log(`stdout: ${stdout}`);
+            socket.emit('start', stdout)
+        });
+
+
+
     })
 
-    exec('pwd', (err, stdout, stderr) => {
-        if (err) {
-            console.log(err)
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-        }
-        // the *entire* stdout and stderr (buffered)
-        console.log(`stdout: ${stdout}`);
-        socket.emit('start', stdout)
-    });
-    // exec(`powershell.exe -Command "pwd"`, (err, stdout, stderr) => {
-    //     if (err) {
-    //         console.log(err)
-    //     }
-    //     if (stderr) {
-    //         console.log(`stderr: ${stderr}`);
-    //     }
+    // const os = require('os');
 
-    //     socket.emit('givedir', stdout)
-    // });
+    // const platform = os.platform();
+
+    // console.log(`You are using: ${platform}`);
 
 
+}
 
-})
+// initialization();
 
-// const os = require('os');
-
-// const platform = os.platform();
-
-// console.log(`You are using: ${platform}`);
-
-
-
+module.exports = initialization;
 
 

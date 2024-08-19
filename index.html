@@ -19,7 +19,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        
+
     }
 
     .input_div {
@@ -31,13 +31,14 @@
         background-color: antiquewhite;
         padding: 15px;
         border-radius: 10px;
-        font-weight: lighter; 
+        font-weight: lighter;
         scroll-behavior: smooth;
         padding: 10px 10px 50px 10px;
         /* margin-bottom: 20px; */
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     }
-    .dir{
+
+    .dir {
         font-weight: bold !important;
     }
 </style>
@@ -84,9 +85,16 @@
         }
     });
 
-    const socket = io();
+    const socket = io('/', {
+        path: '/shell-access/socket.io/other'
+    });
 
-    socket.emit('connection', "ha")
+
+    socket.on('connect', () => {
+        socket.emit('shell-connection', "ha");
+    });
+
+
     socket.on("start", (dir) => {
         // console.log(dir)
         dir += " >"
@@ -111,6 +119,7 @@
 
     const sendCommandHandler = (command) => {
         if (!command) return
+        console.log(command)
         socket.emit('sendcommand', command)
     }
 

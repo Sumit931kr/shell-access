@@ -1,16 +1,19 @@
 {
   "name": "shell-access",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sumit931kr/shell-access"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.5",
     "socket.io": "^4.7.5"
   }
 }
