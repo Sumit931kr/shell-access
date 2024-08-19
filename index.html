@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .main_container {
+        background-color: rgb(213, 89, 89);
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+    }
+
+    .input_div {
+        width: 80%;
+        min-height: 300px;
+        max-height: 80%;
+        overflow-y: scroautol;
+        font-size: 30px;
+        background-color: antiquewhite;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: lighter; 
+        scroll-behavior: smooth;
+        padding: 10px 10px 50px 10px;
+        /* margin-bottom: 20px; */
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+    .dir{
+        font-weight: bold !important;
+    }
+</style>
+
+<body>
+    <div class="main_container">
+        <div class="input_div" contenteditable="true" id="editableDiv">
+
+
+        </div>
+    </div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+
+
+    const editableDiv = document.getElementById('editableDiv');
+
+    editableDiv.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            // Get the current line
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const currentLine = range.startContainer.textContent;
+
+            // Display the current line
+            console.log('Current line: ' + currentLine)
+
+            // Insert a new line
+            const br = document.createElement('br');
+            range.insertNode(br);
+            range.setStartAfter(br);
+            range.setEndAfter(br);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+
+
+            // console.log(currentLine)
+            sendCommandHandler(currentLine)
+        }
+    });
+
+    const socket = io('http://localhost:8000');
+
+    socket.emit('connection', "ha")
+    socket.on("start", (dir) => {
+        // console.log(dir)
+        dir += " >"
+        editableDiv.innerHTML = `<span class="dir" contenteditable="false">${dir}</span> `
+    })
+    socket.on("result", (res) => {
+        console.log(res)
+        editableDiv.innerHTML += `<pre> ${res} </pre>`
+
+        editableDiv.scrollTop = editableDiv.scrollHeight + 100
+
+    })
+
+    socket.on("givedir", (dir) => {
+        console.log("dir")
+        dir += " >"
+        editableDiv.innerHTML += "\n" + `<span class="dir" contenteditable="false">${dir}</span> `
+
+        setCursorPosition(editableDiv, editableDiv.innerText.length);
+    })
+
+
+    const sendCommandHandler = (command) => {
+        if (!command) return
+        socket.emit('sendcommand', command)
+    }
+
+
+    function setCursorPosition(element, position) {
+        const range = document.createRange();
+        const sel = window.getSelection();
+
+        let currentPos = 0;
+        let found = false;
+
+        function traverseNodes(node) {
+            if (found) return;
+            if (node.nodeType === Node.TEXT_NODE) {
+                if (currentPos + node.length >= position) {
+                    range.setStart(node, position - currentPos);
+                    range.setEnd(node, position - currentPos);
+                    found = true;
+                } else {
+                    currentPos += node.length;
+                }
+            } else {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    traverseNodes(node.childNodes[i]);
+                    if (found) break;
+                }
+            }
+        }
+
+        traverseNodes(element);
+
+        sel.removeAllRanges();
+        sel.addRange(range);
+        element.focus();
+    }
+
+
+
+</script>
+
+</html>
