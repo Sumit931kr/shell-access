@@ -39,37 +39,74 @@ function initialization() {
     });
 
 
+    let directoryControl = ""
+
     io.on('connection', socket => {
-        console.log("connectionrequest")
+
         socket.on("sendcommand", command => {
             console.log("command " + command);
-            exec(`${command}`, (err, stdout, stderr) => {
+
+            let isError = false;
+
+            if(command == 'cd /'){
+                console.log("cd / ----  found");
+                directoryControl = ""
+            }
+
+            // execute commands
+            let execuetCommand = directoryControl ? `cd  ${directoryControl} && ${command}` : command
+            exec(execuetCommand, (err, stdout, stderr) => {
                 if (err) {
+                    console.log("erro " + err)
                     console.log(err)
+                    socket.emit('result', stderr);
+                    isError = true;
+                    
                 }
-                if (stderr) {
+                else if (stderr) {
                     console.log(`stderr: ${stderr}`);
+                    socket.emit('result', stderr);
+                    isError = true;
+
                 }
-                console.log(stdout);
+
+                console.log("dir  " + directoryControl)
+
+                if ( !isError && command.search('cd ') == 0) {
+                    console.log("cd found");
+
+
+                    let dir = command.split(' ');
+                    let dotdir = dir[1];
+                    console.log(dotdir);
+                    let addCmd = dotdir + (dotdir[dotdir.length-1] == '/' ? "" : "/")
+                    console.log(addCmd)
+                    directoryControl += addCmd;
+                }
 
                 socket.emit('result', stdout)
-                exec('pwd', (err, stdout, stderr) => {
+
+
+                // give back the current directory
+                let dirCommand = directoryControl ? `cd ${directoryControl} && pwd` : "pwd"
+                exec(dirCommand, (err, stdout, stderr) => {
                     if (err) {
                         console.log(err)
                     }
                     if (stderr) {
                         console.log(`stderr: ${stderr}`);
                     }
-                    console.log("give dir " + stdout)
+                    // console.log("give dir " + stdout)
                     socket.emit('givedir', stdout)
                 });
 
-
             })
-
         })
 
-        exec('pwd', (err, stdout, stderr) => {
+
+        // give back the current directory
+        let dirCommand = directoryControl ? `cd ${directoryControl} && pwd` : "pwd"
+        exec(dirCommand, (err, stdout, stderr) => {
             if (err) {
                 console.log(err)
             }

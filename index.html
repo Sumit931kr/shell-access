@@ -51,14 +51,18 @@
         </div>
     </div>
 </body>
+
 <script src="/socket.io/socket.io.js"></script>
+<!-- <script src="/socket.io/other/socket.io.js"></script> -->
 <script>
 
-
+    // 
+    let previousCommandsArray = [];
 
     const editableDiv = document.getElementById('editableDiv');
 
     editableDiv.addEventListener('keydown', function (event) {
+
         if (event.key === 'Enter') {
             event.preventDefault();
 
@@ -83,10 +87,16 @@
             // console.log(currentLine)
             sendCommandHandler(currentLine)
         }
+
+        if (event.key == 'ArrowUp') {
+
+        }
+
     });
 
     const socket = io('/', {
         path: '/shell-access/socket.io/other'
+        // path: '/socket.io/other'
     });
 
 
@@ -96,34 +106,36 @@
 
 
     socket.on("start", (dir) => {
-        // console.log(dir)
         dir += " >"
         editableDiv.innerHTML = `<span class="dir" contenteditable="false">${dir}</span> `
     })
     socket.on("result", (res) => {
         console.log(res)
-        editableDiv.innerHTML += `<pre> ${res} </pre>`
-
-        editableDiv.scrollTop = editableDiv.scrollHeight + 100
+        editableDiv.innerHTML += `<pre>${res}</pre>`
 
     })
 
     socket.on("givedir", (dir) => {
-        console.log("dir")
+        
         dir += " >"
-        editableDiv.innerHTML += "\n" + `<span class="dir" contenteditable="false">${dir}</span> `
-
+        editableDiv.innerHTML += '<br/>' + `<span class="dir" contenteditable="false">${dir}</span> `
+        
+        editableDiv.scrollTop = editableDiv.scrollHeight
         setCursorPosition(editableDiv, editableDiv.innerText.length);
     })
 
-
+    // send command handler
     const sendCommandHandler = (command) => {
         if (!command) return
         console.log(command)
-        socket.emit('sendcommand', command)
+        let sendAbleCommand = validateSentence(command);
+        console.log("Send command " + sendAbleCommand)
+        previousCommandsArray.push(sendAbleCommand)
+        if (sendAbleCommand == 'clear') { window.location.reload(); return; }
+        socket.emit('sendcommand', sendAbleCommand);
     }
 
-
+    // this function dois not work properly
     function setCursorPosition(element, position) {
         const range = document.createRange();
         const sel = window.getSelection();
@@ -157,6 +169,19 @@
     }
 
 
+
+    // get previous commands
+
+
+
+    // validate Sentence 
+
+    const validateSentence = (sentence) => {
+        if (!sentence) return "";
+
+        return sentence.split(' ').map((el) => el.trim()).filter((el) => el !== "").join(' ')
+
+    }
 
 </script>
 
