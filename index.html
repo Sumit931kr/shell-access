@@ -58,40 +58,87 @@
 
     // 
     let previousCommandsArray = [];
+    let commandCounter = previousCommandsArray.length;
 
     const editableDiv = document.getElementById('editableDiv');
+
 
     editableDiv.addEventListener('keydown', function (event) {
 
         if (event.key === 'Enter') {
             event.preventDefault();
 
-            // Get the current line
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0);
-            const currentLine = range.startContainer.textContent;
+            currentLine = editableDiv.innerHTML
+            currentLine = currentLine.trim()
+            // console.log("currentLineArr ")
 
-            // Display the current line
-            console.log('Current line: ' + currentLine)
-
-            // Insert a new line
-            const br = document.createElement('br');
-            range.insertNode(br);
-            range.setStartAfter(br);
-            range.setEndAfter(br);
-            selection.removeAllRanges();
-            selection.addRange(range);
-
-
+            // cutting some lines
+            currentLineArr = currentLine.split("</span>");
+            // console.log(currentLineArr)
+            currentLine = currentLineArr[currentLineArr.length - 1]
 
             // console.log(currentLine)
+            if (currentLine[currentLine.length - 1] == '>') {
+                currentLine = "";
+            }
             sendCommandHandler(currentLine)
+            handleMoveCursorToEnd();
         }
 
         if (event.key == 'ArrowUp') {
+            console.log("arraow up");
+            if (commandCounter > 0) {
+                commandCounter--;
+            }
 
+            if (previousCommandsArray[commandCounter]) {
+                let allCommandArr = editableDiv.innerHTML.split('</span>');
+
+                allCommandArr.pop();
+
+                let allCommandStr = allCommandArr.join('</span>') + "</span>";
+
+                let allCommand = `${allCommandStr}${previousCommandsArray[commandCounter]}`;
+
+                editableDiv.innerHTML = allCommand;
+
+            }
+            handleMoveCursorToEnd();
+        }
+        if (event.key == 'ArrowDown') {
+            console.log("arrow down");
+            if (commandCounter <= previousCommandsArray.length - 1) {
+                commandCounter++;
+            }
+            // console.log("Command counter "+ commandCounter)      
+            // console.log(previousCommandsArray[commandCounter])
+            // console.log(previousCommandsArray[commandCounter])
+            if (previousCommandsArray[commandCounter]) {
+                let allCommandArr = editableDiv.innerHTML.split('</span>');
+
+                allCommandArr.pop();
+
+                let allCommandStr = allCommandArr.join('</span>') + "</span>";
+
+                let allCommand = `${allCommandStr}${previousCommandsArray[commandCounter]}`;
+
+                editableDiv.innerHTML = allCommand;
+            }
+            else {
+                let allCommandArr = editableDiv.innerHTML.split('</span>');
+
+                allCommandArr.pop();
+
+                let allCommandStr = allCommandArr.join('</span>') + "</span>";
+                editableDiv.innerHTML = allCommandStr
+            }
+            handleMoveCursorToEnd();
         }
 
+
+       setTimeout(() => {
+           editableDiv.scrollTop = editableDiv.scrollHeight 
+       }, 100);
     });
 
     const socket = io('/', {
@@ -108,66 +155,75 @@
     socket.on("start", (dir) => {
         dir += " >"
         editableDiv.innerHTML = `<span class="dir" contenteditable="false">${dir}</span> `
+        moveCursorToEnd(editableDiv)
     })
     socket.on("result", (res) => {
-        console.log(res)
+        // console.log(res)           
         editableDiv.innerHTML += `<pre>${res}</pre>`
 
     })
 
     socket.on("givedir", (dir) => {
-        
+
         dir += " >"
         editableDiv.innerHTML += '<br/>' + `<span class="dir" contenteditable="false">${dir}</span> `
-        
+
         editableDiv.scrollTop = editableDiv.scrollHeight
-        setCursorPosition(editableDiv, editableDiv.innerText.length);
+        moveCursorToEnd(editableDiv)
+        // setCursorPosition(editableDiv, 135);
     })
 
     // send command handler
     const sendCommandHandler = (command) => {
         if (!command) return
         console.log(command)
+        command = command.trim()
         let sendAbleCommand = validateSentence(command);
-        console.log("Send command " + sendAbleCommand)
+        console.log("Send command " + sendAbleCommand);
+
         previousCommandsArray.push(sendAbleCommand)
         if (sendAbleCommand == 'clear') { window.location.reload(); return; }
+
+
         socket.emit('sendcommand', sendAbleCommand);
+        commandCounter = previousCommandsArray.length;
+
+
+
     }
 
-    // this function dois not work properly
-    function setCursorPosition(element, position) {
-        const range = document.createRange();
-        const sel = window.getSelection();
 
-        let currentPos = 0;
-        let found = false;
+    // move the cursor to the end
+    function moveCursorToEnd(element) {
+        // Make sure the element is contentEditable
+        element.contentEditable = true;
 
-        function traverseNodes(node) {
-            if (found) return;
-            if (node.nodeType === Node.TEXT_NODE) {
-                if (currentPos + node.length >= position) {
-                    range.setStart(node, position - currentPos);
-                    range.setEnd(node, position - currentPos);
-                    found = true;
-                } else {
-                    currentPos += node.length;
-                }
-            } else {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    traverseNodes(node.childNodes[i]);
-                    if (found) break;
-                }
-            }
-        }
+        // Create a new range
+        let range = document.createRange();
 
-        traverseNodes(element);
+        // Select the element
+        range.selectNodeContents(element);
 
-        sel.removeAllRanges();
-        sel.addRange(range);
+        // Collapse the range to the end
+        range.collapse(false);
+
+        // Get the selection object
+        let selection = window.getSelection();
+
+        // Remove any existing selections
+        selection.removeAllRanges();
+
+        // Add the new range
+        selection.addRange(range);
+
+        // Focus on the element
         element.focus();
     }
 
+    const handleMoveCursorToEnd = () => {
+        setTimeout(() => { moveCursorToEnd(editableDiv) }, 300)
+
+    }
 
 
     // get previous commands
