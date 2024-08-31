@@ -54,9 +54,9 @@ function initialization() {
             }
 
             // execute commands
-            execuetCommand = execuetCommand.replaceAll('&nbsp;', ' ');
-            let execuetCommand = directoryControl ? `cd  ${directoryControl} && ${command}` : command
-            exec(execuetCommand, (err, stdout, stderr) => {
+            let executeCommand = directoryControl ? `cd  ${directoryControl} && ${command}` : command
+            executeCommand = executeCommand.replaceAll('&nbsp;', ' ');
+            exec(executeCommand, (err, stdout, stderr) => {
                 if (err) {
                     console.log("erro " + err)
                     console.log(err)

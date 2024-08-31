@@ -1,7 +1,7 @@
 {
   "name": "shell-access",
-  "version": "1.0.6",
-  "description": "Fix bug in the send command",
+  "version": "1.0.7",
+  "description": "Fix bug in the send command 2",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
