@@ -54,6 +54,7 @@ function initialization() {
             }
 
             // execute commands
+            execuetCommand = execuetCommand.replaceAll('&nbsp;', ' ');
             let execuetCommand = directoryControl ? `cd  ${directoryControl} && ${command}` : command
             exec(execuetCommand, (err, stdout, stderr) => {
                 if (err) {

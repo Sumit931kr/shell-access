@@ -177,12 +177,16 @@
     const sendCommandHandler = (command) => {
         if (!command) return
         console.log(command)
+
+        command = command.replaceAll('&nbsp;', ' ');
+
         command = command.trim()
         let sendAbleCommand = validateSentence(command);
         console.log("Send command " + sendAbleCommand);
 
         previousCommandsArray.push(sendAbleCommand)
         if (sendAbleCommand == 'clear') { window.location.reload(); return; }
+
 
 
         socket.emit('sendcommand', sendAbleCommand);
