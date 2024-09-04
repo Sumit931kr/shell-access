@@ -3,35 +3,42 @@ const passcode_container = document.getElementById('passcode_container');
 const passcode_input = document.getElementById('input_passcode');
 const passcode_msg = document.querySelector('.passcode-msg');
 
-function initialization_UI () {
-let authToken = sessionStorage.getItem('authToken');
+function initialization_UI() {
+    let authToken = sessionStorage.getItem('authToken');
 
-editableDiv.style.display = `${authToken ? "block":"none"}`;
-passcode_container.style.display = `${authToken ? "none":"flex"}`
+    editableDiv.style.display = `${authToken ? "block" : "none"}`;
+    passcode_container.style.display = `${authToken ? "none" : "flex"}`
 
-if(authToken){
-    editableDiv.focus();
-    setTimeout(() => {
-        handleMoveCursorToEnd();
-    }, 500);
-}
-else{
-    passcode_input.focus()
-}
+    if (authToken) {
+        editableDiv.focus();
+        setTimeout(() => {
+            handleMoveCursorToEnd();
+        }, 500);
+    }
+    else {
+        passcode_input.focus()
+    }
 
 }
 initialization_UI();
 
 
 const socket = io('/', {
-    path: '/shell-access/socket.io/other'
+
+    //  ****production****
     // path: '/socket.io/other'
+
+    // ****deployment****
+    path: '/shell-access/socket.io/other'
+
+
 });
 
-const verifyPassCode = ()=> {
-let input = document.getElementById('input_passcode');
-// console.log(input.value);
-socket.emit("passcode-verify",input.value);
+const verifyPassCode = () => {
+    let input = document.getElementById('input_passcode');
+
+    // console.log(input.value);
+    socket.emit("passcode-verify", input.value);
 
 }
 
@@ -43,7 +50,7 @@ let commandCounter = previousCommandsArray.length;
 
 
 
-const editableDivClick = (event) =>  {
+const editableDivClick = (event) => {
 
     if (event.key === 'Enter') {
         event.preventDefault();
@@ -122,24 +129,35 @@ const editableDivClick = (event) =>  {
     }, 100);
 };
 
+const passwordToggle = (event) => {
+    let type = passcode_input.type;
 
+    if (type == "password") {
+        event.target.innerHTML = "hide";
+        passcode_input.type = "text"
+    } else {
+        event.target.innerHTML = "show";
+        passcode_input.type = "password"
+
+    }
+}
 
 
 socket.on('connect', () => {
     socket.emit('shell-connection', "ha");
 
-    socket.on("passcode-verified", authToken=>{
+    socket.on("passcode-verified", authToken => {
         // console.log("AuthToken ", authToken);
         sessionStorage.setItem('authToken', authToken);
         initialization_UI();
     })
-    
-    socket.on("passcode-failed",(wrong)=>{
+
+    socket.on("passcode-failed", (wrong) => {
         passcode_msg.style.display = "block";
         sessionStorage.clear();
         initialization_UI();
     })
-    
+
     socket.on("start", (dir) => {
         dir += " >"
         editableDiv.innerHTML = `<span class="dir" contenteditable="false">${dir}</span> `
@@ -148,14 +166,14 @@ socket.on('connect', () => {
     socket.on("result", (res) => {
         // console.log(res)           
         editableDiv.innerHTML += `<pre>${res}</pre>`
-    
+
     })
-    
+
     socket.on("givedir", (dir) => {
-    
+
         dir += " >"
         editableDiv.innerHTML += '<br/>' + `<span class="dir" contenteditable="false">${dir}</span> `
-    
+
         editableDiv.scrollTop = editableDiv.scrollHeight
         moveCursorToEnd(editableDiv)
         // setCursorPosition(editableDiv, 135);
@@ -179,8 +197,8 @@ const sendCommandHandler = (command) => {
     if (sendAbleCommand == 'clear') { window.location.reload(); return; }
 
     let result = {
-        authToken : sessionStorage.getItem('authToken'),
-        command : sendAbleCommand
+        authToken: sessionStorage.getItem('authToken'),
+        command: sendAbleCommand
     }
     socket.emit('sendcommand', result);
     commandCounter = previousCommandsArray.length;
