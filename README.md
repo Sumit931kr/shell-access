@@ -28,7 +28,9 @@ npm install http-proxy-middleware
 
 ```javascript
 const initialization = require('shell-access');
-initialization();
+
+<!-- pass the passcode in function -->
+initialization("passcode");
 ```
 
 2. Set up the proxy middleware in your Express server:
@@ -57,7 +59,9 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 
 // Initialize shell-access
-initialization();
+<!-- pass the passcode in function -->
+initialization("passcode");
+
 
 // Set up proxy middleware
 app.use('/shell-access', createProxyMiddleware({

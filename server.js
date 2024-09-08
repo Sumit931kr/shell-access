@@ -1,9 +1,24 @@
 
 
+let userDirectories = new Map();
+
+const getUserDirectory = (socketId) => {
+    return userDirectories.get(socketId) || '';
+}
+
+const setUserDirectory = (socketId, directory) => {
+    userDirectories.set(socketId, directory);
+}
+
+const removeUserDirectory = (socketId) => {
+    userDirectories.delete(socketId);
+}
+
+
 
 function initialization(passCode) {
 
-    console.log("started");
+    // console.log("started");
     const { exec } = require('child_process');;
 
 
@@ -73,20 +88,26 @@ function initialization(passCode) {
         path: '/socket.io/other',
         cors: {
             origin: '*',
+            methods: ['GET', 'POST'],
         }
     });
 
+    // console.log(io)
 
-    let directoryControl = ""
 
-    io.on('connection', socket => {
+    
+    io.on('connect', socket => {
+        let directoryControl = getUserDirectory(socket.id)
+        console.log(socket.id)
 
         socket.on("passcode-verify", passcode => {
-            // console.log(passcode);
+            console.log("passcode")
+            console.log(passcode);
             if (passcode == passCode) {
                 socket.emit('passcode-verified', encrypt(passCode));
             }
             else {
+                console.log("passcode not matched")
                 socket.emit('passcode-failed', "wrong")
             }
         })
@@ -103,7 +124,7 @@ function initialization(passCode) {
 
             if (command == 'cd /') {
                 console.log("cd / ----  found");
-                directoryControl = ""
+                setUserDirectory(socket.id, "")
             }
 
             // execute commands
@@ -128,7 +149,7 @@ function initialization(passCode) {
                 // console.log("dir  " + directoryControl)
 
                 if (!isError && command.search('cd ') == 0) {
-                    console.log("cd found");
+                    // console.log("cd found");
 
 
                     let dir = command.split(' ');
@@ -137,6 +158,7 @@ function initialization(passCode) {
                     let addCmd = dotdir + (dotdir[dotdir.length - 1] == '/' ? "" : "/")
                     console.log(addCmd)
                     directoryControl += addCmd;
+                    setUserDirectory(socket.id, directoryControl)
                 }
 
                 socket.emit('result', stdout)
@@ -169,8 +191,9 @@ function initialization(passCode) {
                 console.log(`stderr: ${stderr}`);
             }
             // the *entire* stdout and stderr (buffered)
-            // console.log(`stdout: ${stdout}`);
             socket.emit('start', stdout)
+            console.log("adfter")
+            console.log(`stdout: ${stdout}`);
         });
 
 
@@ -207,15 +230,6 @@ function decrypt(text, shift) {
     return encrypt(text, 26 - shift);
 }
 
-// Example usage:
-//   const originalText = "Hello, World!";
-//   const shiftAmount = 3;
-
-//   const encryptedText = encrypt(originalText, shiftAmount);
-//   console.log("Encrypted:", encryptedText);
-
-//   const decryptedText = decrypt(encryptedText, shiftAmount);
-//   console.log("Decrypted:", decryptedText);
 
 module.exports = initialization;
 

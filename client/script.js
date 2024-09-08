@@ -25,10 +25,10 @@ initialization_UI();
 
 const socket = io('/', {
 
-    //  ****production****
+    // ****devlopment****
     // path: '/socket.io/other'
-
-    // ****deployment****
+    
+    //  ****production****
     path: '/shell-access/socket.io/other'
 
 
@@ -37,7 +37,8 @@ const socket = io('/', {
 const verifyPassCode = () => {
     let input = document.getElementById('input_passcode');
 
-    // console.log(input.value);
+    console.log(input.value);
+   
     socket.emit("passcode-verify", input.value);
 
 }
@@ -143,16 +144,19 @@ const passwordToggle = (event) => {
 }
 
 
+// console.log(socket)
 socket.on('connect', () => {
-    socket.emit('shell-connection', "ha");
+    // console.log("started")
+    // socket.emit('shell-connection', "ha");
 
     socket.on("passcode-verified", authToken => {
-        // console.log("AuthToken ", authToken);
+        console.log("AuthToken ", authToken);
         sessionStorage.setItem('authToken', authToken);
         initialization_UI();
     })
 
     socket.on("passcode-failed", (wrong) => {
+        console.log("passcode-failed", wrong);
         passcode_msg.style.display = "block";
         sessionStorage.clear();
         initialization_UI();

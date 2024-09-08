@@ -1,7 +1,7 @@
 {
   "name": "shell-access",
-  "version": "1.0.12",
-  "description": "",
+  "version": "1.0.13",
+  "description": "Add different user can start with main directory",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
