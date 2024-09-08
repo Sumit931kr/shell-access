@@ -29,7 +29,7 @@ npm install http-proxy-middleware
 ```javascript
 const initialization = require('shell-access');
 
-<!-- pass the passcode in function -->
+// <!-- pass the passcode in function -->
 initialization("passcode");
 ```
 
@@ -59,7 +59,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 
 // Initialize shell-access
-<!-- pass the passcode in function -->
+// <!-- pass the passcode in function -->
 initialization("passcode");
 
 
