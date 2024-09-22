@@ -1,7 +1,7 @@
 {
   "name": "shell-access",
-  "version": "1.0.13",
-  "description": "Add different user can start with main directory",
+  "version": "1.1.0",
+  "description": "A server access through a web browser",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,5 +15,18 @@
   "license": "ISC",
   "dependencies": {
     "socket.io": "^4.7.5"
-  }
+  },
+  "keywords": [
+    "shell",
+    "access",
+    "shell-access",
+    "terminal",
+    "browser",
+    "server",
+		"npm",
+		"keyword",
+		"package",
+		"packages",
+		"search"
+	]
 }

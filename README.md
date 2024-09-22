@@ -7,7 +7,7 @@
 To install `shell-access`, use npm:
 
 ```javascript 
-npm install shell-access
+npm install shell-access@latest
 ```
 
 ## Prerequisites

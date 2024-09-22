@@ -36,8 +36,6 @@ const socket = io('/', {
 
 const verifyPassCode = () => {
     let input = document.getElementById('input_passcode');
-
-    console.log(input.value);
    
     socket.emit("passcode-verify", input.value);
 
@@ -58,24 +56,18 @@ const editableDivClick = (event) => {
 
         currentLine = editableDiv.innerHTML
         currentLine = currentLine.trim()
-        // console.log("currentLineArr ")
 
         // cutting some lines
         currentLineArr = currentLine.split("</span>");
-        // console.log(currentLineArr)
         currentLine = currentLineArr[currentLineArr.length - 1]
-
-        // console.log(currentLine)
         if (currentLine[currentLine.length - 1] == '>') {
             currentLine = "";
         }
-        // console.log(currentLine)
         sendCommandHandler(currentLine)
         handleMoveCursorToEnd();
     }
 
     if (event.key == 'ArrowUp') {
-        // console.log("arraow up");
         if (commandCounter > 0) {
             commandCounter--;
         }
@@ -95,13 +87,10 @@ const editableDivClick = (event) => {
         handleMoveCursorToEnd();
     }
     if (event.key == 'ArrowDown') {
-        // console.log("arrow down");
         if (commandCounter <= previousCommandsArray.length - 1) {
             commandCounter++;
         }
-        // console.log("Command counter "+ commandCounter)      
-        // console.log(previousCommandsArray[commandCounter])
-        // console.log(previousCommandsArray[commandCounter])
+
         if (previousCommandsArray[commandCounter]) {
             let allCommandArr = editableDiv.innerHTML.split('</span>');
 
@@ -144,19 +133,14 @@ const passwordToggle = (event) => {
 }
 
 
-// console.log(socket)
 socket.on('connect', () => {
-    // console.log("started")
-    // socket.emit('shell-connection', "ha");
 
     socket.on("passcode-verified", authToken => {
-        console.log("AuthToken ", authToken);
         sessionStorage.setItem('authToken', authToken);
         initialization_UI();
     })
 
     socket.on("passcode-failed", (wrong) => {
-        console.log("passcode-failed", wrong);
         passcode_msg.style.display = "block";
         sessionStorage.clear();
         initialization_UI();
@@ -167,8 +151,7 @@ socket.on('connect', () => {
         editableDiv.innerHTML = `<span class="dir" contenteditable="false">${dir}</span> `
         moveCursorToEnd(editableDiv)
     })
-    socket.on("result", (res) => {
-        // console.log(res)           
+    socket.on("result", (res) => {          
         editableDiv.innerHTML += `<pre>${res}</pre>`
 
     })
@@ -189,13 +172,11 @@ socket.on('connect', () => {
 // send command handler
 const sendCommandHandler = (command) => {
     if (!command) return
-    // console.log(command)
 
     command = command.replaceAll('&nbsp;', ' ');
 
     command = command.trim()
     let sendAbleCommand = validateSentence(command);
-    // console.log("Send command " + sendAbleCommand);
 
     previousCommandsArray.push(sendAbleCommand)
     if (sendAbleCommand == 'clear') { window.location.reload(); return; }

@@ -98,16 +98,16 @@ function initialization(passCode) {
     
     io.on('connect', socket => {
         let directoryControl = getUserDirectory(socket.id)
-        console.log(socket.id)
+        // console.log(socket.id)
 
         socket.on("passcode-verify", passcode => {
-            console.log("passcode")
-            console.log(passcode);
+            // console.log("passcode")
+            // console.log(passcode);
             if (passcode == passCode) {
                 socket.emit('passcode-verified', encrypt(passCode));
             }
             else {
-                console.log("passcode not matched")
+                // console.log("passcode not matched")
                 socket.emit('passcode-failed', "wrong")
             }
         })
@@ -115,7 +115,7 @@ function initialization(passCode) {
         socket.on("sendcommand", ({authToken,command}) => {
 
             let decryptText = decrypt(authToken);
-            console.log(decryptText)
+            // console.log(decryptText)
             if(decryptText !== passCode) {
                 socket.emit('passcode-failed', "wrong")
             }
@@ -123,30 +123,28 @@ function initialization(passCode) {
             let isError = false;
 
             if (command == 'cd /') {
-                console.log("cd / ----  found");
+                // console.log("cd / ----  found");
                 setUserDirectory(socket.id, "")
             }
 
             // execute commands
             let execuetCommand = directoryControl ? `cd  ${directoryControl} && ${command}` : command
-            console.log("execu command " + execuetCommand);
+            // console.log("execu command " + execuetCommand);
             execuetCommand = execuetCommand.replaceAll('&nbsp;', ' ');
             exec(execuetCommand, (err, stdout, stderr) => {
                 if (err) {
-                    console.log("erro " + err)
+                    // console.log("erro " + err)
                     console.log(err)
                     // socket.emit('result', stderr);
                     isError = true;
 
                 }
                 else if (stderr) {
-                    console.log(`stderr: ${stderr}`);
+                    // console.log(`stderr: ${stderr}`);
                     socket.emit('result', stderr);
                     isError = true;
 
                 }
-
-                // console.log("dir  " + directoryControl)
 
                 if (!isError && command.search('cd ') == 0) {
                     // console.log("cd found");
@@ -154,15 +152,14 @@ function initialization(passCode) {
 
                     let dir = command.split(' ');
                     let dotdir = dir[1];
-                    console.log(dotdir);
+                    // console.log(dotdir);
                     let addCmd = dotdir + (dotdir[dotdir.length - 1] == '/' ? "" : "/")
-                    console.log(addCmd)
+                    // console.log(addCmd)
                     directoryControl += addCmd;
                     setUserDirectory(socket.id, directoryControl)
                 }
 
                 socket.emit('result', stdout)
-
 
                 // give back the current directory
                 let dirCommand = directoryControl ? `cd ${directoryControl} && pwd` : "pwd"
@@ -192,25 +189,14 @@ function initialization(passCode) {
             }
             // the *entire* stdout and stderr (buffered)
             socket.emit('start', stdout)
-            console.log("adfter")
-            console.log(`stdout: ${stdout}`);
+            // console.log("adfter")
+            // console.log(`stdout: ${stdout}`);
         });
 
 
 
     })
-
-    // const os = require('os');
-
-    // const platform = os.platform();
-
-    // console.log(`You are using: ${platform}`);
-
-
 }
-
-// initialization("sumit");
-
 
 function encrypt(text, shift) {
     if (!shift) shift = 3;
